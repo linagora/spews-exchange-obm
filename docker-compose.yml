@@ -1,0 +1,40 @@
+version: '2'
+
+services:
+
+  rabbitmq:
+    build: ./rabbitmq/
+    hostname: spews-rabbit
+    volumes:
+      - ./rabbitmq-data:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+
+  exporter:
+    image: linagofab/exchange-exporter-proto-ci
+    command: ["/binaries/EchangeExporterProto/EchangeExporterProto.exe", "--config", "/config/exporter.config", "--targets", "/config/targets.csv"]
+    volumes:
+      - .:/config
+    links:
+      - rabbitmq:mq
+    depends_on:
+      - exporter-transformer
+
+  exporter-transformer:
+    image: linagofab/exchange-exporter-proto-ci
+    command: ["/binaries/EchangeDumpedMessagesListener/EchangeDumpedMessagesListener.exe", "--config", "/config/exporter.config"]
+    volumes:
+      - .:/config
+    links:
+      - rabbitmq:mq
+
+  importer:
+    image: thilaire/spews-importer-obm
+    command: ["import", "--amqp_host", "amqp://mq", "${PAPI_URL}", "${DOMAIN_UUID}"]
+    volumes:
+      - ./importer-log:/code/log/
+    links:
+      - rabbitmq:mq
+    environment:
+      - NODE_TLS_REJECT_UNAUTHORIZED=0
+      - LOG_LEVEL=info
