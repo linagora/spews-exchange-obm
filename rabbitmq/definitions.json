@@ -36,6 +36,13 @@
        },
        {
           "arguments" : {},
+          "name" : "addressbooks",
+          "auto_delete" : false,
+          "vhost" : "/",
+          "durable" : true
+       },
+       {
+          "arguments" : {},
           "name" : "Messages.NewAppointmentDumped:Messages_test",
           "auto_delete" : false,
           "vhost" : "/",
@@ -95,6 +102,14 @@
           "routing_key" : "",
           "arguments" : {},
           "destination" : "events",
+          "destination_type" : "queue"
+       },
+       {
+          "vhost" : "/",
+          "source" : "Messages.NewAddressBook:Messages",
+          "routing_key" : "",
+          "arguments" : {},
+          "destination" : "addressbooks",
           "destination_type" : "queue"
        },
        {
